@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
     printf("%%sm          31:1\n");
 #endif
     printf("%%src3        32:8\n");
-    printf("%%wbs         16:8 !function=ex_lshift_2\n");
+    printf("%%wbs         16:8 !function=ex_lshift_1\n");
     printf("%%table       40:1 24:7\n");
     printf("%%aalit       8:2\n");
     printf("%%aau         10:2\n");
