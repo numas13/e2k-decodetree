@@ -86,6 +86,15 @@ static int mas_ignore(const struct al_format_info *f) {
 }
 #endif
 
+static bool need_group(const struct al_opcode *p) {
+    switch (p->format) {
+    case AAURW:
+        return true;
+    default:
+        return (p->flags & AF_ALIAS);
+    }
+}
+
 int main(int argc, char *argv[]) {
     const struct al_format_info *f;
 
@@ -162,7 +171,7 @@ int main(int argc, char *argv[]) {
                 printf(" wbs");
                 break;
             case 's':
-                printf(" sreg");
+                printf(" src1");
                 break;
             case 'i':
                 printf(" imm");
@@ -247,7 +256,7 @@ int main(int argc, char *argv[]) {
                 printf(" %%wbs");
                 break;
             case 's':
-                printf(" sreg=%%src1");
+                printf(" %%src1");
                 break;
             case 'i':
                 printf(" imm=%%src3");
@@ -320,7 +329,7 @@ int main(int argc, char *argv[]) {
             }
 
             f = &al_format_info[p->format];
-            if ((p->flags & AF_ALIAS) && !group) {
+            if (!group && need_group(p)) {
                 printf("{\n");
                 group = true;
             }
@@ -339,7 +348,15 @@ int main(int argc, char *argv[]) {
             printf("%-*s", width, p->name);
 #if GEN_MAS
             printf(" ");
-            print_fixed_bits(7, 0, 0, mas_ignore(f));
+            switch (p->format) {
+            case AAURR:
+            case AAURW:
+                print_fixed_bits(7, 0x3f, 0x7f, 0);
+                break;
+            default:
+                print_fixed_bits(7, 0, 0, mas_ignore(f));
+                break;
+            }
 #endif
             printf(" ");
             print_channels(channels);
@@ -373,7 +390,7 @@ int main(int argc, char *argv[]) {
 
             printf("\n");
 
-            if (!(p->flags & AF_ALIAS) && group) {
+            if (group && !need_group(p)) {
                 printf("}\n");
                 group = false;
             }
